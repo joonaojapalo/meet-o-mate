@@ -1,0 +1,2 @@
+/* Application namespace */
+var MeetOMate = {};
