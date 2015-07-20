@@ -1,0 +1,59 @@
+doctype html
+html(lang="en")
+  head
+    title Ajanotto
+
+    meta(http-equiv="cache-control" content="max-age=0")
+    meta(http-equiv="cache-control" content="no-cache")
+    meta(http-equiv="expires" content="0")
+    meta(http-equiv="pragma" content="no-cache")
+    link(rel='stylesheet' href='/static/bootstrap.min.css')
+    link(rel='stylesheet' href='/static/main.css')
+    script(src='/static/lib/require.min.js')
+    script(type='text/javascript')
+      requirejs.config({
+          baseUrl: 'static/app',
+          paths: {
+            text: '../lib/text.min',
+            jquery: '../lib/jquery.min',
+            underscore: '../lib/underscore-min',
+            backbone: '../lib/backbone-min',
+            marionette: '../lib/backbone.marionette.min',
+            'backbone.modelbinder': '../lib/Backbone.ModelBinder.min',
+            handlebars: '../lib/handlebars.min',
+            bootstrap: '../lib/bootstrap.min'
+          },
+          shim: {
+            bootstrap: ['jquery']
+          }
+      });
+
+      requirejs(['finish'], function(FinishApp) {
+        FinishApp();
+      });
+  body
+    script#template-addrunner(type='text/template')
+
+    div.navbar.navbar-default
+      div.container-fluid
+        ul.nav.navbar-nav
+          li.active
+            a(data-toggle="tab", href="#open-times") Avoimet ajat
+          li
+            a(data-toggle="tab", href="#timing") Ajanotto
+    div.container-fluid
+      div.tab-content
+        div.tab-pane.active#open-times
+          div#view-times
+        div.tab-pane#timing
+          div.row
+            div.col-md-7
+              h1 Maali
+              hr
+              div#view-timing
+            div.col-md-5
+              h1 Lähtö
+              hr
+              div#view-classes
+
+

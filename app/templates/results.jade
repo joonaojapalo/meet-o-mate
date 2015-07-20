@@ -1,0 +1,21 @@
+doctype html
+html(lang="en")
+  head
+    title Tulokset: {{eventName}}
+    link(rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css')
+  body
+    script#template-addrunner(type='text/template')
+
+    div.container-fluid
+      h1 {{eventName}} tulokset
+      hr
+      each class in results
+        h2= class['name']
+
+        table.table.table-striped
+          each item in class['list']
+            tr
+              td {{item['place']}}.
+              td <small>{{item['bip']}}</small>
+              td {{item['firstname']}} {{item['lastname']}}
+              td {{item['result']}}

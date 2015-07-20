@@ -1,0 +1,36 @@
+doctype html
+html(lang="en")
+  head
+    title Ilmoittautuminen
+
+    link(rel='stylesheet' href='/static/bootstrap.min.css')
+    script(src='/static/lib/require.min.js')
+    script(type='text/javascript')
+      requirejs.config({
+          baseUrl: 'static/app',
+          paths: {
+            text: '../lib/text.min',
+            jquery: '../lib/jquery.min',
+            underscore: '../lib/underscore-min',
+            backbone: '../lib/backbone-min',
+            marionette: '../lib/backbone.marionette.min',
+            'backbone.modelbinder': '../lib/Backbone.ModelBinder.min',
+            handlebars: '../lib/handlebars.min',
+            bootstrap: '../lib/bootstrap.min'
+          }
+      });
+
+      require(['app'], function(App) {
+        App();
+      });
+  body
+    script#template-addrunner(type='text/template')
+
+    div.container-fluid
+      h1 Ilmoittautuminen
+      hr
+      div.row
+        div.col-md-4
+          div#view-addrunner
+        div.col-md-8
+          div#view-runners

@@ -1,0 +1,17 @@
+<ul class="list-group">
+{{#items}}
+	<li class="list-group-item">
+		<div class="row">
+			<div class="col-xs-1">{{bip}}</div>
+			<div class="col-xs-1">{{class_name}}</div>
+			<div class="col-xs-3">{{lastname}}, {{firstname}}</div>
+			<div class="col-xs-2">{{club}}</div>
+			<div class="col-xs-2">{{finish_time_formatted}}</div>
+			<div class="col-xs-3">
+				{{result_time_formatted}} ({{status}})
+				<button class="btn btn-default pull-right">Muokkaa</button>
+			</div>
+		</div>
+	</li>
+{{/items}}
+</ul>

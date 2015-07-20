@@ -1,0 +1,48 @@
+<h4>Lisää kilpailija</h4>
+<form class="form-horizontal">
+	<div class="form-group">
+		<label class="form-label col-xs-2">Numero:</label>
+		<div class="col-sm-6">
+		  <input type="number" name="bip" placeholder="Kilpailunumero" class="form-control">
+		</div>
+	</div>
+	<div class="form-group">
+		<div class="col-sm-6">
+		  <input type="text" name="firstname" placeholder="Etunimi" class="form-control">
+		</div>
+		<div class="col-sm-6">
+		  <input type="text" name="lastname" placeholder="Sukunimi" class="form-control">
+		</div>
+	</div>
+
+	<div class="form-group">
+		<div class="col-sm-12">
+		  <input type="text" name="club" placeholder="Seura" class="form-control">
+		</div>
+	</div>
+
+	<div class="form-group">
+		<label class="form-label col-xs-2">Sarja:</label>
+		<div class="col-sm-4">
+			<select name="class_name" class="form-control">
+			{{#classes}}
+				<option value="{{class_name}}">{{class_name}}</option>
+			{{/classes}}
+			</select>
+		</div>
+
+		<div class="col-sm-4">
+			<select name="status" class="form-control">
+			{{#statusOptions}}
+				<option value="{{value}}">{{text}}</option>
+			{{/statusOptions}}
+			</select>
+		</div>
+	</div>
+</form>
+
+<div class="row">
+	<div class="col-xs-12">
+		<button class="btn btn-success btn-lg pull-right add">Tallenna</button>
+	</div>
+</div>
