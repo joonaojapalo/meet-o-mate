@@ -1,228 +1,337 @@
-define(['jquery', 'handlebars', 'underscore', 'backbone', 'marionette', 'backbone.modelbinder', 'bootstrap',
-	'text!templates/time.handlebars', 'text!templates/timing.handlebars'
-	], function($, Handlebars, _, Backbone, Marionette, ModelBinder, Bootstrap,
-		TimeTemplate, TimingTemplate
-	) {
-	'use strict';
+define([
+    'jquery',
+    'handlebars',
+    'underscore', 'backbone',
+    'marionette',
+    'backbone.modelbinder',
+    'bootstrap',
+    'text!templates/time.handlebars', 'text!templates/timing.handlebars',
+    'models/ping'
+], function(
+    $,
+    Handlebars,
+    _, Backbone, Marionette, ModelBinder, Bootstrap,
+    TimeTemplate,
+    TimingTemplate,
+    Ping
+) {
+    'use strict';
 
-	// use Handlebars templating
-	Marionette.Renderer.render = function(template, data) {
-		var template = Handlebars.compile(template);
-		return template(data);
-	};
-
-	var Time = Backbone.Model.extend({
-		urlRoot: '/times',
-		validate: function() {
-			if (! parseInt(this.get('bip'))) {
-				this.set('bip', null);
-			}
-		},
-		initialize: function() {
-			if (this.collection) {
-//				this.on('change:status', this.collection.sort);
-			}
-		},
-	});
-
-	var Times = Backbone.Collection.extend({
-		model: Time,
-		url: '/times',
-		comparator: function(a, b) {
-			var isFix = function(x) {
-					return (x.get('status') == 'fixed')?1:0;
-				},
-				sa = isFix(a),
-				sb = isFix(b);
-			console.log('cmp');
-			return (sa - sb) - (sb - sa);
-		}
-	});
-
-	var TimeView = Marionette.ItemView.extend({
-		template: TimeTemplate,
-		triggers: {
-			'click button': 'time:fix'
-		},
-		templateHelpers: function() {
-			var d = new Date(this.model.get('ts') * 1000);
-			return {
-				ts_formatted: d.toLocaleTimeString(),
-				fixed: (this.model.get('status') == 'fixed')
-			}
-		},
-		modelEvents: {
-			'change:status': 'onChangeStatus'
-		},
-		onChangeStatus: function(model, value) {
-			if (value == 'fixed') {
-				this.$('.panel-body').addClass('fix');
-			} else {
-				this.$('.panel-body').removeClass('fix');
-			}
-		},
-		onRender: function() {
-			var binder = new ModelBinder();
-			binder.bind(this.model, this.el, { bip: '[name="bip"]'});
-		},
-		onTimeFix: function() {
-			var bip = parseInt(this.$('[name="bip"]').val(), 10);
-			this.model.set('bip',bip);
-			this.model.save({}, {
-				wait: true,
-				success: function(model) {
-					console.log("Fix commited", model.get('bip'));
-				}
-			});
-		}
-	});	
-
-	var TimesView = Marionette.CollectionView.extend({
-		childView: TimeView,
-
-		el: '#view-times',
-
-		initialize: function() {
-			this.collection.on('sync', this.render);
-		},
-
-		filter: function (child, index, collection) {
-			var open = (child.get('status') == 'open'),
-				t = child.get('ts'),
-				age = (Date.now() / 1000 - t);
-			return open || (age < 120);
-		}
-	});
+    // use Handlebars templating
+    Marionette.Renderer.render = function(template, data) {
+        var template = Handlebars.compile(template);
+        return template(data);
+    };
 
 
-	var TimingView = Marionette.ItemView.extend({
-		template: TimingTemplate,
-		el: "#view-timing",
 
-		triggers: {
-			'click button': 'time:fix'
-		},
+    var Time = Backbone.Model.extend({
 
-		ui: {
-			bip: '[name="bip"]'
-		},
+        urlRoot: '/times',
 
-		onTimeFix: function() {
-			var bip = parseInt(this.ui.bip.val()),
-				time = Date.now() / 1000.0,
-				view = this;
+        validate: function() {
+            if (!parseInt(this.get('bip'))) {
+                this.set('bip', null);
+            }
+        },
 
-			console.log("Fix time " + time + " to: " + bip);
-			var t = new Time({ts: time, bip: bip});
-			this.collection.create(t, {
-				wait: true,
-				success: function() {
-					var b = bip || '(open)',
-						el;
+        isFixed: function() {
+            return (this.get('status') == 'fixed');
+        },
 
-					//log
-					console.log("saved", b);
+        isOpen: function() {
+            return (this.get('status') == 'open');
+        },
 
-					// ui mark
-					el = $('<span>').html(b).addClass('badge');
-					view.$('.marks').append(el);
-					el.fadeOut(3000);
-					(function (el) {
-					    setTimeout(function () {
-					        el.remove();
-					    }, 3000);
-					}(el));
-				}
-			});
-
-			this.ui.bip.val('');
-		}
-	});
-
-	var Class = Backbone.Model.extend({
-		idAttribute: 'name'
-	});
-
-	var Classes = Backbone.Collection.extend({
-		url: '/classes',
-		model: Class
-	});
-
-	function updateTimer($el, t) {
-		var d = Date.now() / 1000.0 - t,
-			secs = Math.floor(d % 60),
-			mins = Math.floor(d / 60);
-
-		function pad(n, width, z) {
-		  z = z || '0';
-		  n = n + '';
-		  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-		}
-
-		$el.html("" + mins + ":" + pad(secs, 2));
-		setTimeout(function() {updateTimer($el, t);}, 1000);
-	}
+        newerThan: function(seconds) {
+            return (Date.now() / 1000 - this.get("ts")) < seconds;
+        }
+    });
 
 
-	var ClassView = Marionette.ItemView.extend({
-		template: '<button class="btn btn-danger btn-lg">Lähetä</button> {{name}} <span class="timer pull-right"></span>',
-		tagName: 'li',
+    var Times = Backbone.Collection.extend({
 
-		events: {
-			'click button': 'setStartTime'
-		},
+        model: Time,
 
-		initialize: function() {
-//			_.bindAll(this, 'updateTimer');
-		},
+        url: '/times',
 
-		onRender: function() {
-			var t = this.model.get('t_start');
+        initialize: function(options) {
+            var _this = this;
 
-			if (t) {
-				updateTimer(this.$('.timer'), t);
-			}
+            // setup periodic update
+            this.on("sync", function() {
+                setTimeout(_this.fetch.bind(this), (options && options.refresh) || 6000);
+            });
+        },
 
-			this.$el.addClass('list-group-item');
-		},
-
-		setStartTime: function() {
-			var t = Date.now() / 1000.0;
-			console.log("set start time", this.model.get('name'), t);
-			this.model.set('t_start', t);
-			this.model.save();
-		}
-	});
-
-	var ClassesView = Marionette.CollectionView.extend({
-		el: '#view-classes',
-		tagName: 'ul',
-		childView: ClassView,
-		initialize: function() {
-			this.collection.on('sync', this.render);
-		},
-		onRender: function() {
-			this.$el.addClass('list-group');
-		}
-	});
+        comparator: "ts"
+    });
 
 
-	var Finish = {
-		times: new Times(),
-		classes: new Classes()
-	};
+    var TimeView = Marionette.ItemView.extend({
+        template: TimeTemplate,
+
+        triggers: {
+            'click button': 'time:fix'
+        },
+
+        ui: {
+            panel: ".panel-body"
+        },
+
+        templateHelpers: function() {
+            var d = new Date(this.model.get('ts') * 1000);
+
+            return {
+                ts_formatted: d.toLocaleTimeString(),
+                fixed: this.model.isFixed()
+            }
+        },
+
+        modelEvents: {
+            'change:status': 'onChangeStatus'
+        },
+
+        initialize: function() {
+            this.binder = new ModelBinder();
+        },
+
+        onChangeStatus: function(model, value) {
+            if (model.isFixed()) {
+                this.ui.panel.addClass('fix');
+            } else {
+                this.ui.panel.removeClass('fix');
+            }
+
+            this.options.onChange && this.options.onChange(this.model);
+        },
+
+        onRender: function() {
+            this.binder.bind(this.model, this.el, {
+                bip: '[name="bip"]',
+                status: '[name="status"]'
+            });
+
+            this.onChangeStatus(this.model, this.model.get("status"));
+        },
+
+        onTimeFix: function() {
+            var bip = parseInt(this.$('[name="bip"]').val(), 10);
+            this.model.set('bip', bip);
+            this.model.save({}, {
+                wait: true,
+                success: function(model) {
+                    console.log("Fix commited", model.get('bip'));
+                }
+            });
+        }
+    });
 
 
-	return function() {
-		var timesView = new TimesView({collection: Finish.times}),
-			timingView = new TimingView({collection: Finish.times}),
-			classesView = new ClassesView({collection: Finish.classes});
+    var NoTimesView = Marionette.ItemView.extend({
+        template: '<div class="well text-muted">Ei aikoja.</div>'
+    });
 
-		Finish.classes.fetch();
-		Finish.times.fetch();
-		timingView.render();
+    var OpenTimesView = Marionette.CollectionView.extend({
+        childView: TimeView,
 
-		// tabs
-		$('.nav-tabs').tab();
-	};
+        emptyView: NoTimesView,
+
+        childOptions: function() {
+            return {
+                "onChange": this.onChange
+            };
+        },
+
+        filter: function(child, index, collection) {
+            return child.isOpen();
+        },
+
+        initialize: function () {
+        	_.bindAll(this, "onChange");
+        },
+
+        onChange: function(model) {
+            alert("foo"); // TODO
+        }
+    });
+
+    var FixedTimesView = Marionette.CollectionView.extend({
+        childView: TimeView,
+
+        emptyView: NoTimesView,
+
+        childOptions: {
+            "onChange": function() {
+                return this.onChange;
+            }
+        },
+
+        filter: function(child, index, collection) {
+            return child.isFixed() && child.newerThan(300);
+        }
+    });
+
+
+    var TimingView = Marionette.ItemView.extend({
+        template: TimingTemplate,
+
+        triggers: {
+            'click button': 'time:fix'
+        },
+
+        ui: {
+            bip: '[name="bip"]'
+        },
+
+        onTimeFix: function() {
+            var bip = parseInt(this.ui.bip.val()),
+                time = Date.now() / 1000.0,
+                view = this;
+
+            console.log("Fix time " + time + " to: " + bip);
+            this.collection.create({
+                ts: time,
+                bip: bip
+            }, {
+                wait: true,
+                success: function(model) {
+                    var b = '(open #' + model.get("id") + ' )',
+                        el;
+
+                    if (model.get("bip")) {
+                        b = model.get("bip") + " #" + model.get("id");
+                    }
+
+                    // ui mark
+                    el = $('<span>').html(b).addClass('label').addClass('label-info');
+                    view.$('.marks').append(el);
+                    el.fadeOut(5000);
+                    (function(el) {
+                        setTimeout(function() {
+                            el.remove();
+                        }, 5000);
+                    }(el));
+                }
+            });
+
+            this.ui.bip.val('');
+        }
+    });
+
+    var Class = Backbone.Model.extend({
+        idAttribute: 'name'
+    });
+
+    var Classes = Backbone.Collection.extend({
+        url: '/classes',
+        model: Class
+    });
+
+    function updateTimer($el, t) {
+        var d = Date.now() / 1000.0 - t,
+            secs = Math.floor(d % 60),
+            mins = Math.floor(d / 60);
+
+        function pad(n, width, z) {
+            z = z || '0';
+            n = n + '';
+            return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+        }
+
+        $el.html("" + mins + ":" + pad(secs, 2));
+        setTimeout(function() {
+            updateTimer($el, t);
+        }, 1000);
+    }
+
+
+    var ClassView = Marionette.ItemView.extend({
+        template: '<button class="btn btn-danger btn-lg">Lähetä</button> {{name}} <span class="timer pull-right"></span>',
+        tagName: 'li',
+
+        events: {
+            'click button': 'setStartTime'
+        },
+
+        onRender: function() {
+            var t = this.model.get('t_start');
+
+            if (t) {
+                updateTimer(this.$('.timer'), t);
+            }
+
+            this.$el.addClass('list-group-item');
+        },
+
+        setStartTime: function() {
+            var t = Date.now() / 1000.0;
+            console.log("set start time", this.model.get('name'), t);
+            this.model.set('t_start', t);
+            this.model.save();
+        }
+    });
+
+
+    var ClassesView = Marionette.CollectionView.extend({
+        tagName: 'ul',
+
+        childView: ClassView,
+
+        className: "list-group"
+    });
+
+
+    var App = function() {
+        var times = new Times(),
+            classes = new Classes(),
+            regions = {
+                timing: new Marionette.Region({
+                    el: "#view-timing"
+                }),
+                classes: new Marionette.Region({
+                    el: "#view-classes"
+                }),
+                openTimes: new Marionette.Region({
+                    el: "#view-times"
+                }),
+                fixedTimes: new Marionette.Region({
+                    el: "#view-fixed-times"
+                })
+            };
+
+
+
+        $.when(classes.fetch(), times.fetch()).done(function() {
+
+            regions.openTimes.show(new OpenTimesView({
+                collection: times
+            }));
+
+            regions.fixedTimes.show(new FixedTimesView({
+                collection: times
+            }));
+
+            regions.timing.show(new TimingView({
+                collection: times
+            }));
+
+            regions.classes.show(new ClassesView({
+                collection: classes
+            }));
+
+            // setup ping
+            var ping = new Ping(),
+                body = $("body");
+            ping.on("change:status", function(model, value) {
+                body.removeClass((value == "ok") ? "ping-not-ok" : "ping-ok");
+                body.addClass((value == "ok") ? "ping-ok" : "ping-not-ok");
+            });
+        });
+
+        // tabs
+        $('.nav-tabs').tab();
+    };
+
+    return App;
 });

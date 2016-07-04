@@ -1,8 +1,0 @@
-{
-	"sqlite_db": "meet_name.db3",
-	"web_host": "host",
-	"web_user": "user",
-	"web_pass": "secret",
-	"web_result_path": "remote/path",
-	"web_result_update_sleep": 60
-}

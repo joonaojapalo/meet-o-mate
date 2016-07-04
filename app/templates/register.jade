@@ -1,0 +1,18 @@
+extends ./base.jade
+
+block head
+    script(type='text/javascript')
+      require(['app'], function(App) {
+        App();
+      });
+
+    title Ilmoittautuminen
+
+block body
+    script#template-addrunner(type='text/template')
+
+    div.container-fluid
+      h1 Ilmoittautuminen
+      hr
+      #root
+        p.text-muted Ladataan...

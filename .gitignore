@@ -1,0 +1,6 @@
+*.pyc
+db-backups/*.*
+app/classes.txt
+*.db3
+*.log
+config.json

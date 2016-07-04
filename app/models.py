@@ -1,4 +1,3 @@
-import optparse
 
 from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
@@ -26,12 +25,14 @@ class Class (Base):
 
 class Runner (Base):
 	__tablename__ = 'runner'
-	bip = Column(Integer, primary_key=True)
-	firstname = Column(String(64))
-	lastname = Column(String(64))
-	club = Column(String(64), index=True)
-	class_name = Column(String, ForeignKey("class.name"), nullable=False)
-	status = Column(Enum("new", "ok", "dq", "dnf", "dns"), default="new")
+
+	id 			= Column(Integer, primary_key=True)
+	bip 		= Column(Integer)
+	firstname 	= Column(String(64))
+	lastname 	= Column(String(64))
+	club 		= Column(String(64), index=True)
+	class_name 	= Column(String, ForeignKey("class.name"), nullable=False)
+	status 		= Column(Enum("new", "ok", "dq", "dnf", "dns"), default="new")
 	# add FK to registration when necessary
 
 	time = relationship("Time")
@@ -71,24 +72,3 @@ class Registration (Base):
 
 
 
-def create_schema(metadata, engine):
-	metadata.create_all(engine)
-
-
-if __name__ == "__main__":
-	opts, args = optparse.OptionParser().parse_args()
-	base = args[0] if len(args) else "test"
-	sqlite_db_file = "%s.db3" % base 
-	print " * Creating create_schema: %s" %sqlite_db_file
-	engine = create_engine('sqlite:///%s'% sqlite_db_file, echo=True)
-	create_schema(Base.metadata, engine)
-
-	# set initialdata
-	from sqlalchemy.orm import sessionmaker
-	db_session = sessionmaker(bind=engine)()
-
-	for line in open("classes.txt"):
-		class_name = line.strip()
-		db_session.add(Class(name=class_name))
-	
-	db_session.commit()

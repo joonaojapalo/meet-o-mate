@@ -1,0 +1,13 @@
+{
+	"DATABASE_URI": "sqlite:///test.db3",
+	"DEBUG": true,
+	"logFile": "app_test.log",
+	"port": 80,
+	"host": "0.0.0.0",
+	"web_ssh_host": "ssh.example.com",
+	"web_ssh_user": "user",
+	"web_ssh_pass": "pass",
+	"web_result_path": "public_html/results",
+	"web_result_update_sleep": 180,
+	"eventName": "Event name YYYY"
+}

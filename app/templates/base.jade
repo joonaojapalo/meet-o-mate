@@ -1,0 +1,49 @@
+doctype html
+html(lang="fi")
+  head
+    link(rel='stylesheet' href='/static/bootstrap.min.css')
+    link(rel='stylesheet' href='/static/main.css')
+    script(src='/static/lib/require.min.js')
+    script(type='text/javascript')
+      requirejs.config({
+          baseUrl: 'static/app',
+          paths: {
+            'text': '../lib/text.min',
+            'jquery': '../lib/jquery.min',
+            'underscore': '../lib/underscore-min',
+            'backbone': '../lib/backbone-min',
+            'marionette': '../lib/backbone.marionette.min',
+            'backbone.modelbinder': '../lib/Backbone.ModelBinder.min',
+            'handlebars': '../lib/handlebars.min',
+            'bootstrap': '../lib/bootstrap.min'
+          },
+          shim: {
+            'bootstrap': ['jquery']
+          }
+      });
+
+    block head
+
+  body
+    .navbar.navbar-inverse
+      .container-fluid
+        .navbar-header
+          button.navbar-toggle.collapsed(data-toggle="collapse",data-target="#headmenu")
+            span.icon-bar
+            span.icon-bar
+            span.icon-bar
+          span.navbar-brand Meet-o-mate
+        #headmenu.collapse.navbar-collapse
+          ul.nav.navbar-nav
+            li: a(href=url_register) Info
+            li: a(href=url_timing) Ajanotto
+            li: a(href=url_results) Tulokset
+
+    block body
+
+    script.
+      require(['bootstrap'], function() {
+        "use strict";
+
+      });
+

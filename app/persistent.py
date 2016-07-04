@@ -5,13 +5,13 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.orm.exc import NoResultFound
 
-from schema import *
+from models import *
 from config import *
 
 
-def get_engine(sqlite_db_file, echo=False):
-	print " * Connecting to sqlite: %s" % sqlite_db_file
-	engine = create_engine('sqlite:///%s'% sqlite_db_file, echo=echo, convert_unicode=True)
+def get_engine(database_uri, echo=False):
+	print " * Connecting to database: %s" % database_uri
+	engine = create_engine(database_uri, echo=echo, convert_unicode=True)
 	return engine
 
 
@@ -28,7 +28,7 @@ def create_class(class_name):
 
 def read_runners():
 	rs = []
-	readable = ["bip", "firstname", "lastname", "club", "class_name", "status"]
+	readable = ["id", "bip", "firstname", "lastname", "club", "class_name", "status"]
 	for r in session.query(Runner).join(Class):
 		output = pluck(r, readable)
 		output["finish_time"] = r.finish_time()
@@ -38,10 +38,11 @@ def read_runners():
 
 	return rs
 
-def update_runner(bip, class_name, first, last, club, status):
+
+def update_runner(id, bip, class_name, first, last, club, status):
 	
 	try:
-		runner = session.query(Runner).filter_by(bip=bip).join(Class).one()
+		runner = session.query(Runner).filter_by(id=id).join(Class).one()
 	except NoResultFound:
 		return create_runner(bip, class_name, first, last, club, status)
 
@@ -54,7 +55,7 @@ def update_runner(bip, class_name, first, last, club, status):
 
 	session.commit()
 
-	readable = ["bip", "firstname", "lastname", "club", "class_name", "status"]
+	readable = ["id", "bip", "firstname", "lastname", "club", "class_name", "status"]
 	obj = pluck(runner, readable)
 	return obj
 
@@ -64,7 +65,7 @@ def create_runner(bip, class_name, first, last, club, status="new"):
 	session.add(runner)
 	session.commit()
 
-	readable = ["bip", "firstname", "lastname", "club", "class_name", "status"]
+	readable = ["id", "bip", "firstname", "lastname", "club", "class_name", "status"]
 	return pluck(runner, readable)
 
 
@@ -134,8 +135,6 @@ def read_times():
 	# query all times
 	times = pick(session.query(Time), ("id", "bip", "ts", "status"))
 
-	# TODO: apply open & last 2 minutes filter
-
 	# convert to serializable form
 	replace_attr_type_all(times, Decimal, float)
 
@@ -170,9 +169,8 @@ def reset_timing():
 	session.commit()
 
 # read conf
-conf = get_config()#dict( l.strip().split("=")[:2] for l in open("conf"))
-
-engine = get_engine(conf.get("sqlite_db"))
+conf = get_config()
+engine = get_engine(conf.get("DATABASE_URI"))
 
 # create session
 Session = scoped_session(sessionmaker(bind=engine, autocommit=False, autoflush=False))
