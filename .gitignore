@@ -4,3 +4,4 @@ app/classes.txt
 *.db3
 *.log
 config.json
+project/*.*
