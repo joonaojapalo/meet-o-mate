@@ -19,6 +19,7 @@ Start meet-o-mate
 1. Configure meet-o-mate
 ```shell
 cp config.json.dist config.json
+cp app/classes.txt.dist app/classes.txt.dist
 ```
 
 Setup configuration in `config.json`.
