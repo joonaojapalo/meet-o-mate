@@ -3,9 +3,7 @@ Setup arena network
 -------------------
 
 1. Shut down internet connections
-
 2. Set static ip (eg. 192.168.10.1)
-
 3. Start laptop access point
 ```shell
 sporzznet/create.bat
@@ -31,7 +29,7 @@ app/init_db.py
 app/init_classes.py # reads app/classes.txt
 ```
 
-2. Start
+3. Start
 ```
 app/run.py
 ```
